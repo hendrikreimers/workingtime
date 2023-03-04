@@ -197,7 +197,7 @@
      * @returns {number}
      */
     function getLegalBreak(totalWorkTime) {
-        if (totalWorkTime > 6 && totalWorkTime <= 9) {
+        if (totalWorkTime > 6 && totalWorkTime <= 9.5) { // 9 hours needs a 30 min. break, but we have to calc with 9.5 to reduce 30 min.
             return 0.5;
         } else if (totalWorkTime > 9) {
             return 0.75;
