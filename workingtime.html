@@ -148,7 +148,7 @@
 
     <div id="results" class="hide">
         <p><span>Gesamtzeit:</span> <span id="totalTime"></span></p>
-        <p><span>Pausenzeit:</span> <span id="breakTime"></span></p>
+        <p><span>Pausenzeit:</span> <span id="totalBreakTime"></span></p>
         <p><span><strong>Arbeitszeit:</strong></span> <span id="workTime"></span></p>
     </div>
 </div>
@@ -176,17 +176,27 @@
 
         // Calculate each time block
         const totalTime  = getTotalTime(entries) + breakTime; // Total time given in decimal
-        const legalBreak = getLegalBreak(totalTime - customBreak); // Legal break times as minimum
+        const legalBreak = getLegalBreak(totalTime); // Legal break times as minimum
         const totalBreak = customBreak >= legalBreak ? customBreak : legalBreak // total break time not less than legal break
 
         // Total working time minus the break time
         const totalWorkTime = totalTime - totalBreak;
 
+        // console.log(`
+        //     Total Time: ${totalTime}
+        //     Custom Break: ${customBreak}
+        //     Legal Break: ${legalBreak}
+        //     Total Break: ${totalBreak}
+        //     Work Time: ${totalWorkTime}
+        // `);
+
         // Return results
         return {
             totalTime: totalTime.toFixed(2),
-            workTime: totalWorkTime.toFixed(2),
-            breakTime: totalBreak.toFixed(2)
+            customBreakTime: customBreak.toFixed(2),
+            legalBreakTime: legalBreak.toFixed(2),
+            totalBreakTime: totalBreak.toFixed(2),
+            workTime: totalWorkTime.toFixed(2)
         };
     }
 
@@ -197,7 +207,7 @@
      * @returns {number}
      */
     function getLegalBreak(totalWorkTime) {
-        if (totalWorkTime > 6 && totalWorkTime <= 9.5) { // 9 hours needs a 30 min. break, but we have to calc with 9.5 to reduce 30 min.
+        if (totalWorkTime > 6 && totalWorkTime <= 9.5) {
             return 0.5;
         } else if (totalWorkTime > 9) {
             return 0.75;
@@ -288,7 +298,7 @@
         // Initial the data array
         const timeEntries = [];
 
-        // Hinzufügen der Anfangs- und Endzeit-Einträge aus dem Formular
+        // Add the time blocks to the array for calculation
         startTimes.forEach((startTime, index) => {
             let endTime   = endTimes[index];
 
@@ -299,11 +309,11 @@
             });
         });
 
-        // Berechnen der Arbeitszeit mit der calculateTime-Funktion
-        const { totalTime, workTime, breakTime } = calculateTime(timeEntries, totalBreakTime);
+        // Calculate the time entries
+        const timeResults = calculateTime(timeEntries, totalBreakTime);
 
-        // Anzeigen der Ergebnisse
-        showResults(totalTime, workTime, breakTime);
+        // Show the results
+        showResults(timeResults);
     }
 
     /**
@@ -380,17 +390,16 @@
     /**
      * Updates the results in the resulting DIV Block and shows that.
      *
-     * @param totalTime
-     * @param workTime
-     * @param breakTime
+     * @param timeResults
      */
-    function showResults(totalTime, workTime, breakTime) {
+    function showResults(timeResults) {
         const resultBox = document.getElementById('results');
         const appendTxt = ' Std.';
 
-        resultBox.querySelector('#totalTime').innerHTML = totalTime + appendTxt;
-        resultBox.querySelector('#workTime').innerHTML  = workTime + appendTxt;
-        resultBox.querySelector('#breakTime').innerHTML = breakTime + appendTxt;
+        Object.entries(timeResults).map( ([k,v],i) => {
+            const el = resultBox.querySelector('#' + k);
+            if ( el ) el.innerHTML = v + appendTxt;
+        });
 
         resultBox.classList.remove('hide');
     }
